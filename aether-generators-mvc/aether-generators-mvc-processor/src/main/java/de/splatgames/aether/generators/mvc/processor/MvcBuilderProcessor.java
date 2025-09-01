@@ -787,6 +787,13 @@ public final class MvcBuilderProcessor extends AbstractProcessor {
                 .build();
     }
 
+    /**
+     * Produces a private helper method {@code writeId(Object target, Object idVal)} that tries to assign
+     * the given id value to the target object by scanning for a {@code setId(...)} method or an {@code id} field.
+     *
+     * @return the {@link MethodSpec} for the ID writer (never {@code null})
+     * @since 1.1.1
+     */
     @NotNull
     private MethodSpec writeIdValue() {
         return MethodSpec.methodBuilder("writeId")
