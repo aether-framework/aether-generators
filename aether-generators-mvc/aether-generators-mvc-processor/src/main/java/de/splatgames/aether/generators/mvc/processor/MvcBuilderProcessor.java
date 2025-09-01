@@ -705,15 +705,40 @@ public final class MvcBuilderProcessor extends AbstractProcessor {
                 .returns(Object.class)
                 .addParameter(ProcessorUtils.p(Object.class, "target"))
                 .addParameter(ProcessorUtils.p(String.class, "field"))
+                .beginControlFlow("if (target == null || field == null)")
+                .addStatement("return null")
+                .endControlFlow()
+
+                .addStatement("String cap = Character.toUpperCase(field.charAt(0)) + field.substring(1)")
+                .addStatement("String[] candidates = new String[] { $S + cap, $S + cap }", "get", "is")
+                .beginControlFlow("for (String name : candidates)")
                 .beginControlFlow("try")
-                .addStatement("$T f = target.getClass().getDeclaredField(field)", java.lang.reflect.Field.class)
+                .addStatement("$T m = target.getClass().getMethod(name)", java.lang.reflect.Method.class)
+                .addStatement("m.setAccessible(true)")
+                .addStatement("return m.invoke(target)")
+                .nextControlFlow("catch ($T ignored)", NoSuchMethodException.class)
+                .nextControlFlow("catch ($T e)", ReflectiveOperationException.class)
+                .addStatement("return null")
+                .endControlFlow()
+                .endControlFlow()
+
+                .addStatement("Class<?> t = target.getClass()")
+                .beginControlFlow("while (t != null && t != Object.class)")
+                .beginControlFlow("try")
+                .addStatement("$T f = t.getDeclaredField(field)", java.lang.reflect.Field.class)
                 .addStatement("f.setAccessible(true)")
                 .addStatement("return f.get(target)")
-                .nextControlFlow("catch (Exception e)")
-                .addStatement("throw new RuntimeException(e)")
+                .nextControlFlow("catch ($T e)", NoSuchFieldException.class)
+                .addStatement("t = t.getSuperclass()")
+                .nextControlFlow("catch ($T e)", IllegalAccessException.class)
+                .addStatement("return null")
                 .endControlFlow()
+                .endControlFlow()
+
+                .addStatement("return null")
                 .build();
     }
+
 
     /**
      * Produces a private helper method {@code readId(Object entity)} that tries to obtain the identifier value
@@ -831,19 +856,25 @@ public final class MvcBuilderProcessor extends AbstractProcessor {
                 .beginControlFlow("if (obj == null || depth <= 0)")
                 .addStatement("return")
                 .endControlFlow()
+                .beginControlFlow("if (visited.contains(obj))")
+                .addStatement("return")
+                .endControlFlow()
                 .addStatement("visited.add(obj)");
 
         for (FieldModel fm : fields) {
             if (fm.relationKind() == RelKind.NONE) continue;
+
             if (fm.relationKind() == RelKind.TO_ONE) {
-                b.addStatement("ensurePersistent(getFieldValue(obj, $S), depth - 1, visited)", fm.name());
+                b.addStatement("Object rel = getFieldValue(obj, $S)", fm.name());
+                b.beginControlFlow("if (rel != null)")
+                        .addStatement("ensurePersistent(rel, depth - 1, visited)")
+                        .endControlFlow();
             } else {
-                b.addStatement("$T c = ($T) getFieldValue(obj, $S)",
-                        Collection.class, Collection.class, fm.name());
-                b.beginControlFlow("if (c != null)");
-                b.beginControlFlow("for (Object e : c)");
-                b.addStatement("ensurePersistent(e, depth - 1, visited)");
-                b.endControlFlow();
+                b.addStatement("Object colObj = getFieldValue(obj, $S)", fm.name());
+                b.beginControlFlow("if (colObj instanceof $T c)", Collection.class);
+                b.beginControlFlow("for (Object e : c)")
+                        .addStatement("ensurePersistent(e, depth - 1, visited)")
+                        .endControlFlow();
                 b.endControlFlow();
             }
         }
