@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>de.splatgames.aether</groupId>
+    <artifactId>aether-generators</artifactId>
+    <version>1.1.0</version>
+    <packaging>pom</packaging>
+    <name>Aether Generators</name>
+    <url>https://software.splatgames.de/products/aether/generators</url>
+
+    <description>
+        Aether Generators is a suite of annotation‑driven code generators for JVM applications. It provides compile‑time
+        processors to generate DTOs and fluent MVC Builders (with transient/persistent modes) and a tiny runtime to
+        support realistic test workflows.
+    </description>
+
+    <modules>
+        <module>aether-generators-bom</module>
+        <module>aether-generators-dto</module>
+        <module>aether-generators-mvc</module>
+    </modules>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/license/mit/</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Erik Pförtner</name>
+            <email>splatcrafter@splatgames.de</email>
+            <organization>Splatgames.de Software</organization>
+            <organizationUrl>https://software.splatgames.de/</organizationUrl>
+            <roles>
+                <role>Project Manager</role>
+                <role>Head of Development</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <organization>
+        <name>Splatgames.de Software</name>
+        <url>https://software.splatgames.de/</url>
+    </organization>
+
+    <scm>
+        <connection>scm:git:https://github.com/aether-framework/aether-generators.git</connection>
+        <developerConnection>scm:git:git@github.com:aether-framework/aether-generators.git</developerConnection>
+        <url>https://github.com/aether-framework/aether-generators</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.release>17</maven.compiler.release>
+
+        <!-- Lib Versions -->
+        <org.jetbrains.annotations.version>24.0.0</org.jetbrains.annotations.version>
+        <org.slf4j.version>2.0.16</org.slf4j.version>
+        <org.junit.jupiter.version>5.11.4</org.junit.jupiter.version>
+        <org.assertj.version>3.27.3</org.assertj.version>
+        <org.mockito.version>5.14.2</org.mockito.version>
+
+        <!-- Plugin Versions -->
+        <plugin.compiler.version>3.11.0</plugin.compiler.version>
+        <plugin.enforcer.version>3.4.1</plugin.enforcer.version>
+        <plugin.source.version>3.3.1</plugin.source.version>
+        <plugin.javadoc.version>3.10.1</plugin.javadoc.version>
+        <plugin.site.version>3.20.0</plugin.site.version>
+        <plugin.gpg.version>3.2.6</plugin.gpg.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.jetbrains</groupId>
+                <artifactId>annotations</artifactId>
+                <version>${org.jetbrains.annotations.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${org.slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-simple</artifactId>
+                <version>${org.slf4j.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-api</artifactId>
+                <version>${org.junit.jupiter.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>${org.assertj.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>${org.mockito.version}</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${plugin.compiler.version}</version>
+                    <configuration>
+                        <release>${maven.compiler.release}</release>
+                        <parameters>true</parameters>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>${plugin.enforcer.version}</version>
+                    <executions>
+                        <execution>
+                            <id>enforce-java</id>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
+                            <configuration>
+                                <rules>
+                                    <requireJavaVersion>
+                                        <version>[17,)</version>
+                                    </requireJavaVersion>
+                                </rules>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-site-plugin</artifactId>
+                    <version>${plugin.site.version}</version>
+                </plugin>
+
+                <!-- Source- & Javadoc-JARs only activate in release profile -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>${plugin.source.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>${plugin.javadoc.version}</version>
+                    <configuration>
+                        <encoding>UTF-8</encoding>
+                        <failOnError>false</failOnError>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>${plugin.gpg.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.8.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                            <autoPublish>true</autoPublish>
+                        </configuration>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <encoding>UTF-8</encoding>
+                            <failOnError>false</failOnError>
+                        </configuration>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>3.2.6</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                                <configuration>
+                                    <useAgent>true</useAgent>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
