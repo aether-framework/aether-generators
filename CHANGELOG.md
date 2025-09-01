@@ -6,6 +6,37 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [1.1.1] - 2025-09-01
+
+### Bug Fixes
+
+- Fixed `TransientObjectException` when persisting entities with cyclic associations by introducing a safe pre-persist
+  traversal (depth limit + identity-based cycle guard).
+- Correct handling for `asIdOnly` to-one relations: the builder now assigns identifiers via a robust `writeId(...)`
+  path (tries `setId(...)` first, then falls back to the `id` field), preventing transient references from being
+  flushed.
+- Reflection utilities hardened:
+    - `getFieldValue(...)` prefers JavaBean getters (`getX`/`isX`) and falls back to hierarchical field lookup.
+    - `setFieldReflect(...)` walks superclasses and no-ops on access errors instead of throwing.
+
+### Enhancements
+
+- Clearer diagnostics during builder generation (defaults provider checks, missing no-arg constructor, and generated API
+  name conflicts).
+- Safer `SpringPersistAdapter.save(...)`: repository-first; falls back to `EntityManager.persist/merge` based on runtime
+  identifier presence.
+
+### Compatibility
+
+- No breaking changes to generated builder APIs; no migration required.
+
+### Tests
+
+- Added/updated integration tests covering:
+    - `withRoleId(...)` wiring to an existing FK without creating phantom entities.
+    - cyclic supervisor relations to verify traversal + cycle guard do not produce transient flush errors.
+    - collection setter assignability (`Collection` vs `List`) for generated builders.
+
 ## [1.1.0] - 2025-09-01
 
 ### Improvements
@@ -27,11 +58,15 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [1.0.1] - 2025-09-01
 
 ### Bug Fixes
+
 - Replaced falsely implemented Splatgames.de internal validations library with `java.util.Objects` for null checks.
 
 ### Enhancements
+
 - Added NOTICE file to the project root to comply with Apache-2.0 license requirements.
 
 ## [1.0.0] - 2025-08-31
+
 ### 🎉 Initial Release
+
 - First stable release of the project.

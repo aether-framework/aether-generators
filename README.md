@@ -1,6 +1,6 @@
 ![License](https://img.shields.io/badge/license-MIT-red)
 ![Maven Central](https://img.shields.io/maven-central/v/de.splatgames.aether/aether-generators)
-![Version](https://img.shields.io/badge/version-1.1.0-green)
+![Version](https://img.shields.io/badge/version-1.1.1-green)
 
 # Aether Generators 🚀
 
@@ -17,6 +17,7 @@ support realistic test workflows.
 and optional multi‑output (e.g. `EmployeeDto`, `TransactionDto`).
 
 ✅ **MVC Builder Generator**: Generates `*Builder` for your entities with a clean testing API:
+
 - `transient()` and `persistent()` modes
 - `create()` / `createMany(n)`
 - `withX(...)` fluent setters
@@ -35,13 +36,15 @@ and optional multi‑output (e.g. `EmployeeDto`, `TransactionDto`).
 Aether Generators is available via **Maven** and **Gradle**.
 
 #### **Maven**
+
 > 🎉 All Aether products are available on **Maven Central** – no extra repository required!
 
 ```xml
+
 <dependency>
     <groupId>de.splatgames.aether</groupId>
     <artifactId>aether-generators</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
 </dependency>
 ```
 
@@ -49,30 +52,33 @@ Aether Generators is available via **Maven** and **Gradle**.
 
 ```groovy
 dependencies {
-    implementation 'de.splatgames.aether:aether-generators:1.1.0'
+    implementation 'de.splatgames.aether:aether-generators:1.1.1'
 }
 ```
 
-> ℹ️ Fine‑grained usage per module (e.g., `aether-mvc-annotations`, `aether-mvc-runtime`, `aether-mvc-processor`) is supported; the umbrella artifact provides an easy start.
+> ℹ️ Fine‑grained usage per module (e.g., `aether-mvc-annotations`, `aether-mvc-runtime`, `aether-mvc-processor`) is
+> supported; the umbrella artifact provides an easy start.
 
 ---
 
 ## 🚀 Quick Start
 
 **1. Annotate your entity**
+
 ```java
 import de.splatgames.aether.mvcbuilder.annotations.MvcBuilder;
 
 @MvcBuilder
 public class Role {
-  private Long id;            // ignored by builder if annotated accordingly
-  private String name;
-  private boolean isDefault;
-  // @ManyToMany List<Permission> permissions;
+    private Long id;            // ignored by builder if annotated accordingly
+    private String name;
+    private boolean isDefault;
+    // @ManyToMany List<Permission> permissions;
 }
 ```
 
 **2. Use the generated builder in tests**
+
 ```java
 // Transient object (no DB writes)
 var role = new RoleBuilder()
@@ -89,15 +95,17 @@ var persisted = new RoleBuilder(new SpringPersistAdapter(ctx), new RoleDefaults(
 ```
 
 **3. Enable annotation processing (Maven)**
+
 ```xml
+
 <plugin>
-  <groupId>org.apache.maven.plugins</groupId>
-  <artifactId>maven-compiler-plugin</artifactId>
-  <version>3.11.0</version>
-  <configuration>
-    <parameters>true</parameters>
-    <release>17</release>
-  </configuration>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <version>3.11.0</version>
+    <configuration>
+        <parameters>true</parameters>
+        <release>17</release>
+    </configuration>
 </plugin>
 ```
 
@@ -105,7 +113,7 @@ var persisted = new RoleBuilder(new SpringPersistAdapter(ctx), new RoleDefaults(
 
 ## 📢 Latest Release
 
-- 🚀 **Version:** `1.1.0`
+- 🚀 **Version:** `1.1.1`
 - 📅 **Release Date:** `September 1, 2025`
 - 📦 **Available on**:
   [![Maven Central](https://img.shields.io/maven-central/v/de.splatgames.aether/aether-generators)](https://search.maven.org/artifact/de.splatgames.aether/aether-generators)
