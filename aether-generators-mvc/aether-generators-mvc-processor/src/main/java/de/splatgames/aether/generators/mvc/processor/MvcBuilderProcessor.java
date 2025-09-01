@@ -392,6 +392,7 @@ public final class MvcBuilderProcessor extends AbstractProcessor {
         MethodSpec setFieldReflect = setFieldReflect();
         MethodSpec getFieldValue = getFieldValue();
         MethodSpec readIdVal = readIdValue();
+        MethodSpec writeIdVal = writeIdValue();
         MethodSpec prePersistRoot = prePersistRelationsRoot();
         MethodSpec prePersistDeep = prePersistRelationsDeep(fields);
 
@@ -426,6 +427,7 @@ public final class MvcBuilderProcessor extends AbstractProcessor {
                 .addMethod(setFieldReflect)
                 .addMethod(getFieldValue)
                 .addMethod(readIdVal)
+                .addMethod(writeIdVal)
                 .addMethod(prePersistRoot)
                 .addMethod(prePersistDeep)
                 .addMethod(persistIfNeeded)
@@ -583,7 +585,7 @@ public final class MvcBuilderProcessor extends AbstractProcessor {
                 }
                 b.beginControlFlow("if ($L != null)", idTmp)
                         .addStatement("Object ref = new $T()", fm.type())
-                        .addStatement("setFieldReflect(ref, $S, $L)", "id", idTmp)
+                        .addStatement("writeId(ref, $L)", idTmp)
                         .addStatement("setFieldReflect(obj, $S, ref)", fm.name())
                         .endControlFlow();
                 continue;
@@ -680,13 +682,23 @@ public final class MvcBuilderProcessor extends AbstractProcessor {
                 .addParameter(ProcessorUtils.p(Object.class, "target"))
                 .addParameter(ProcessorUtils.p(String.class, "field"))
                 .addParameter(ProcessorUtils.p(Object.class, "value"))
+                .beginControlFlow("if (target == null || field == null)")
+                .addStatement("return")
+                .endControlFlow()
+                .addStatement("Class<?> t = target.getClass()")
+                .beginControlFlow("while (t != null && t != Object.class)")
                 .beginControlFlow("try")
-                .addStatement("$T f = target.getClass().getDeclaredField(field)", java.lang.reflect.Field.class)
+                .addStatement("$T f = t.getDeclaredField(field)", java.lang.reflect.Field.class)
                 .addStatement("f.setAccessible(true)")
                 .addStatement("f.set(target, value)")
-                .nextControlFlow("catch (Exception e)")
-                .addStatement("throw new RuntimeException(e)")
+                .addStatement("return")
+                .nextControlFlow("catch ($T e)", NoSuchFieldException.class)
+                .addStatement("t = t.getSuperclass()")
+                .nextControlFlow("catch ($T e)", IllegalAccessException.class)
+                .addStatement("return")
                 .endControlFlow()
+                .endControlFlow()
+                .addStatement("return")
                 .build();
     }
 
@@ -705,15 +717,40 @@ public final class MvcBuilderProcessor extends AbstractProcessor {
                 .returns(Object.class)
                 .addParameter(ProcessorUtils.p(Object.class, "target"))
                 .addParameter(ProcessorUtils.p(String.class, "field"))
+                .beginControlFlow("if (target == null || field == null)")
+                .addStatement("return null")
+                .endControlFlow()
+
+                .addStatement("String cap = Character.toUpperCase(field.charAt(0)) + field.substring(1)")
+                .addStatement("String[] candidates = new String[] { $S + cap, $S + cap }", "get", "is")
+                .beginControlFlow("for (String name : candidates)")
                 .beginControlFlow("try")
-                .addStatement("$T f = target.getClass().getDeclaredField(field)", java.lang.reflect.Field.class)
+                .addStatement("$T m = target.getClass().getMethod(name)", java.lang.reflect.Method.class)
+                .addStatement("m.setAccessible(true)")
+                .addStatement("return m.invoke(target)")
+                .nextControlFlow("catch ($T ignored)", NoSuchMethodException.class)
+                .nextControlFlow("catch ($T e)", ReflectiveOperationException.class)
+                .addStatement("return null")
+                .endControlFlow()
+                .endControlFlow()
+
+                .addStatement("Class<?> t = target.getClass()")
+                .beginControlFlow("while (t != null && t != Object.class)")
+                .beginControlFlow("try")
+                .addStatement("$T f = t.getDeclaredField(field)", java.lang.reflect.Field.class)
                 .addStatement("f.setAccessible(true)")
                 .addStatement("return f.get(target)")
-                .nextControlFlow("catch (Exception e)")
-                .addStatement("throw new RuntimeException(e)")
+                .nextControlFlow("catch ($T e)", NoSuchFieldException.class)
+                .addStatement("t = t.getSuperclass()")
+                .nextControlFlow("catch ($T e)", IllegalAccessException.class)
+                .addStatement("return null")
                 .endControlFlow()
+                .endControlFlow()
+
+                .addStatement("return null")
                 .build();
     }
+
 
     /**
      * Produces a private helper method {@code readId(Object entity)} that tries to obtain the identifier value
@@ -749,6 +786,58 @@ public final class MvcBuilderProcessor extends AbstractProcessor {
                 .endControlFlow()
                 .build();
     }
+
+    /**
+     * Produces a private helper method {@code writeId(Object target, Object idVal)} that tries to assign
+     * the given id value to the target object by scanning for a {@code setId(...)} method or an {@code id} field.
+     *
+     * @return the {@link MethodSpec} for the ID writer (never {@code null})
+     * @since 1.1.1
+     */
+    @NotNull
+    private MethodSpec writeIdValue() {
+        return MethodSpec.methodBuilder("writeId")
+                .addModifiers(Modifier.PRIVATE)
+                .returns(void.class)
+                .addParameter(ProcessorUtils.p(Object.class, "target"))
+                .addParameter(ProcessorUtils.p(Object.class, "idVal"))
+                .beginControlFlow("if (target == null)")
+                .addStatement("return")
+                .endControlFlow()
+                .addStatement("Class<?> cls = target.getClass()")
+
+                .beginControlFlow("for ($T m : cls.getMethods())", java.lang.reflect.Method.class)
+                .beginControlFlow("if (m.getName().equals($S) && m.getParameterCount() == 1)", "setId")
+                .beginControlFlow("try")
+                .addStatement("m.setAccessible(true)")
+                .addStatement("m.invoke(target, idVal)")
+                .addStatement("return")
+                .nextControlFlow("catch ($T | $T | $T ignored)",
+                        IllegalAccessException.class,
+                        java.lang.reflect.InvocationTargetException.class,
+                        IllegalArgumentException.class)
+                .endControlFlow()
+                .endControlFlow()
+                .endControlFlow()
+
+                .addStatement("Class<?> c = cls")
+                .beginControlFlow("while (c != null && c != Object.class)")
+                .beginControlFlow("try")
+                .addStatement("$T f = c.getDeclaredField($S)", java.lang.reflect.Field.class, "id")
+                .addStatement("f.setAccessible(true)")
+                .addStatement("f.set(target, idVal)")
+                .addStatement("return")
+                .nextControlFlow("catch ($T e)", NoSuchFieldException.class)
+                .addStatement("c = c.getSuperclass()")
+                .nextControlFlow("catch ($T ignored)", IllegalAccessException.class)
+                .addStatement("return")
+                .endControlFlow()
+                .endControlFlow()
+
+                .addStatement("return")
+                .build();
+    }
+
 
     /**
      * Produces a private helper method {@code hasAnno(Field field, String fqcn)} that checks
@@ -831,19 +920,25 @@ public final class MvcBuilderProcessor extends AbstractProcessor {
                 .beginControlFlow("if (obj == null || depth <= 0)")
                 .addStatement("return")
                 .endControlFlow()
+                .beginControlFlow("if (visited.contains(obj))")
+                .addStatement("return")
+                .endControlFlow()
                 .addStatement("visited.add(obj)");
 
         for (FieldModel fm : fields) {
             if (fm.relationKind() == RelKind.NONE) continue;
+
             if (fm.relationKind() == RelKind.TO_ONE) {
-                b.addStatement("ensurePersistent(getFieldValue(obj, $S), depth - 1, visited)", fm.name());
+                b.addStatement("Object rel = getFieldValue(obj, $S)", fm.name());
+                b.beginControlFlow("if (rel != null)")
+                        .addStatement("ensurePersistent(rel, depth - 1, visited)")
+                        .endControlFlow();
             } else {
-                b.addStatement("$T c = ($T) getFieldValue(obj, $S)",
-                        Collection.class, Collection.class, fm.name());
-                b.beginControlFlow("if (c != null)");
-                b.beginControlFlow("for (Object e : c)");
-                b.addStatement("ensurePersistent(e, depth - 1, visited)");
-                b.endControlFlow();
+                b.addStatement("Object colObj = getFieldValue(obj, $S)", fm.name());
+                b.beginControlFlow("if (colObj instanceof $T c)", Collection.class);
+                b.beginControlFlow("for (Object e : c)")
+                        .addStatement("ensurePersistent(e, depth - 1, visited)")
+                        .endControlFlow();
                 b.endControlFlow();
             }
         }
