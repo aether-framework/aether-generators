@@ -898,7 +898,9 @@ public final class MvcBuilderProcessor extends AbstractProcessor {
         return MethodSpec.methodBuilder("prePersistRelations")
                 .addModifiers(Modifier.PRIVATE)
                 .addParameter(ProcessorUtils.p(Object.class, "obj"))
-                .addStatement("prePersistRelations(obj, REL_DEPTH_LIMIT, new $T<>())", HashSet.class)
+                .addStatement("$T<Object> visited = $T.newSetFromMap(new $T<>())",
+                        java.util.Set.class, java.util.Collections.class, java.util.IdentityHashMap.class)
+                .addStatement("prePersistRelations(obj, REL_DEPTH_LIMIT, visited)")
                 .build();
     }
 
@@ -928,24 +930,28 @@ public final class MvcBuilderProcessor extends AbstractProcessor {
         for (FieldModel fm : fields) {
             if (fm.relationKind() == RelKind.NONE) continue;
 
+            String safeName = fm.name().replaceAll("[^A-Za-z0-9_]", "_");
             if (fm.relationKind() == RelKind.TO_ONE) {
-                b.addStatement("Object rel = getFieldValue(obj, $S)", fm.name());
-                b.beginControlFlow("if (rel != null)")
-                        .addStatement("ensurePersistent(rel, depth - 1, visited)")
+                String relVar = "rel_" + safeName;
+                b.addStatement("Object $L = getFieldValue(obj, $S)", relVar, fm.name())
+                        .beginControlFlow("if ($L != null)", relVar)
+                        .addStatement("ensurePersistent($L, depth - 1, visited)", relVar)
                         .endControlFlow();
             } else {
-                b.addStatement("Object colObj = getFieldValue(obj, $S)", fm.name());
-                b.beginControlFlow("if (colObj instanceof $T c)", Collection.class);
-                b.beginControlFlow("for (Object e : c)")
+                String colVar = "col_" + safeName;
+                b.addStatement("Object $L = getFieldValue(obj, $S)", colVar, fm.name())
+                        .beginControlFlow("if ($L instanceof $T c)", colVar, java.util.Collection.class)
+                        .beginControlFlow("for (Object e : c)")
                         .addStatement("ensurePersistent(e, depth - 1, visited)")
+                        .endControlFlow()
                         .endControlFlow();
-                b.endControlFlow();
             }
         }
 
         b.addStatement("return");
         return b.build();
     }
+
 
     /**
      * Collects eligible fields from the entity type (and optionally its superclasses), honoring
