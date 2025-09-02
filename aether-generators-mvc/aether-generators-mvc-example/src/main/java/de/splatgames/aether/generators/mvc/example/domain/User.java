@@ -42,6 +42,13 @@ public class User {
     @JoinColumn(name = "role_id")
     private Role role;
 
+    @Setter
+    @Getter
+    @MvcField(asIdOnly = true)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "manager_id")
+    private User manager;
+
     @Getter
     @ManyToMany
     @JoinTable(
@@ -50,6 +57,12 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "supervisor_id")
     )
     private List<User> supervisors = new ArrayList<>();
+
+    @Setter
+    @Getter
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "deactivated_by")
+    private User deactivatedBy;
 
     public User() {
     }
