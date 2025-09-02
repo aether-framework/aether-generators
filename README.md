@@ -1,6 +1,6 @@
 ![License](https://img.shields.io/badge/license-MIT-red)
 ![Maven Central](https://img.shields.io/maven-central/v/de.splatgames.aether/aether-generators)
-![Version](https://img.shields.io/badge/version-1.1.1-green)
+![Version](https://img.shields.io/badge/version-1.1.2-green)
 
 # Aether Generators 🚀
 
@@ -44,7 +44,7 @@ Aether Generators is available via **Maven** and **Gradle**.
 <dependency>
     <groupId>de.splatgames.aether</groupId>
     <artifactId>aether-generators</artifactId>
-    <version>1.1.1</version>
+    <version>1.1.2</version>
 </dependency>
 ```
 
@@ -52,7 +52,7 @@ Aether Generators is available via **Maven** and **Gradle**.
 
 ```groovy
 dependencies {
-    implementation 'de.splatgames.aether:aether-generators:1.1.1'
+    implementation 'de.splatgames.aether:aether-generators:1.1.2'
 }
 ```
 
@@ -113,8 +113,8 @@ var persisted = new RoleBuilder(new SpringPersistAdapter(ctx), new RoleDefaults(
 
 ## 📢 Latest Release
 
-- 🚀 **Version:** `1.1.1`
-- 📅 **Release Date:** `September 1, 2025`
+- 🚀 **Version:** `1.1.2`
+- 📅 **Release Date:** `September 2, 2025`
 - 📦 **Available on**:
   [![Maven Central](https://img.shields.io/maven-central/v/de.splatgames.aether/aether-generators)](https://search.maven.org/artifact/de.splatgames.aether/aether-generators)
 

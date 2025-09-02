@@ -51,7 +51,7 @@
  *     <dependency>
  *       <groupId>de.splatgames.aether</groupId>
  *       <artifactId>aether-generators-bom</artifactId>
- *       <version>1.1.1</version>
+ *       <version>1.1.2</version>
  *       <type>pom</type>
  *       <scope>import</scope>
  *     </dependency>

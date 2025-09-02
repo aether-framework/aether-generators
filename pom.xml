@@ -6,7 +6,7 @@
 
     <groupId>de.splatgames.aether</groupId>
     <artifactId>aether-generators</artifactId>
-    <version>1.1.1</version>
+    <version>1.1.2</version>
     <packaging>pom</packaging>
     <name>Aether Generators</name>
     <url>https://software.splatgames.de/products/aether/generators</url>

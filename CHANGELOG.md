@@ -6,6 +6,26 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [1.1.2] - 2025-09-02
+
+### Bug Fixes
+
+- Fixed duplicate local variable names in generated `prePersistRelations(...)` methods by introducing
+  **field-scoped variable naming** (e.g., `rel_<field>`, `col_<field>`). This prevents compile-time errors when multiple
+  relations exist on an entity.
+- Corrected traversal logic: cycle guard is applied exclusively in `ensurePersistent(...)`, avoiding premature
+  termination in `prePersistRelations(...)`. This ensures proper relation pre-persistence while still protecting
+  against infinite loops.
+- Depth-limit traversal confirmed: entities beyond the configured depth are no longer incorrectly asserted in tests;
+  builder now strictly enforces `REL_DEPTH_LIMIT`.
+
+### Compatibility
+
+- No changes to annotations or existing builder APIs.
+- Generated code remains backward-compatible; projects using 1.1.1 require no migration.
+
+---
+
 ## [1.1.1] - 2025-09-01
 
 ### Bug Fixes

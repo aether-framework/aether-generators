@@ -89,7 +89,7 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
  *     <dependency>
  *       <groupId>de.splatgames.aether</groupId>
  *       <artifactId>aether-generators-bom</artifactId>
- *       <version>1.1.1</version>
+ *       <version>1.1.2</version>
  *       <type>pom</type>
  *       <scope>import</scope>
  *     </dependency>
@@ -116,7 +116,7 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
  *           <path>
  *             <groupId>de.splatgames.aether</groupId>
  *             <artifactId>aether-generators-dto-processor</artifactId>
- *             <version>1.1.1</version>
+ *             <version>1.1.2</version>
  *           </path>
  *         </annotationProcessorPaths>
  *         <generatedSourcesDirectory>
