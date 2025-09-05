@@ -1,6 +1,6 @@
 ## Contributing to Aether Generators
 
-Thank you for your interest in contributing to Aether Profiler! 🎉
+Thank you for your interest in contributing to Aether Generators! 🎉
 
 We welcome all contributions, whether it's fixing bugs, adding features, improving documentation, or helping with discussions.
 
