@@ -1,4 +1,4 @@
-## Contributing to Aether Profiler
+## Contributing to Aether Generators
 
 Thank you for your interest in contributing to Aether Profiler! 🎉
 
